@@ -3,7 +3,7 @@
 <script>
 /* CONFIG — pas hier de onderzoeksinhoud aan. Exporteer daarna ResearchConfig.gs via ?admin=1. */
 const CONFIG = {
-  "VERSION": "2026-11-06.1",
+  "VERSION": "2026-11-06.2",
   "APPS_SCRIPT_URL": "https://script.google.com/macros/s/AKfycbw95R6pXSCL0deTdWgWsGbDX9ZEb5IuapCwZvA7jmPnzg4mm1S3WDa0WvqOW7J_2MPzmw/exec",
   "CONTROLEGROEP_AAN": false,
   "LIVE_GEREED": true,
@@ -1054,6 +1054,9 @@ const CONFIG = {
       "audience": [
         "1",
         "3",
+        "4",
+        "7",
+        "9",
         "10"
       ],
       "text": "Gebruikt uw organisatie software voor HR of talentontwikkeling?",
@@ -1366,13 +1369,18 @@ const CONFIG = {
       ],
       "exclusive": [
         "GEEN"
+      ],
+      "audience": [
+        "1",
+        "3",
+        "10"
       ]
     },
     {
       "id": "Q13",
       "block": "BV",
       "type": "scale",
-      "text": "Stel dat u zo’n aanbieder online opzoekt. Hoe belangrijk is de website dan voor uw eerste indruk van het bedrijf?",
+      "text": "Stel dat u nieuwe software zou moeten zoeken. Hoe belangrijk is dan de eerste indruk, bijvoorbeeld van een website?",
       "min": 1,
       "max": 5,
       "ends": [
@@ -1689,7 +1697,7 @@ const CONFIG = {
     "C": {
       "label": "Deel 2 van 3",
       "title": "De website van LIVREA",
-      "text": "LIVREA is een van de aanbieders die u net in de lijst zag. In dit deel bekijkt u hun website: wat valt op, hoe komt het over en wat zou u doen? Er zijn geen goede of foute antwoorden."
+      "text": "In dit deel bekijkt u de website van LIVREA, een aanbieder van software voor talentontwikkeling: wat valt op, hoe komt het over en wat zou u doen? Er zijn geen goede of foute antwoorden."
     },
     "F": {
       "label": "Deel 3 van 3",
@@ -1913,7 +1921,7 @@ function bindPanel(q){if($('#show-site'))$('#show-site').onclick=toggleWebsiteVi
 function updateChoices(q){const v=selected(q);document.querySelectorAll('[data-option]').forEach(b=>{const on=q.type==='multi'?(v||[]).includes(b.dataset.option):v===b.dataset.option;b.setAttribute('aria-checked',on);b.disabled=q.type==='multi'&&q.max&&(v||[]).length>=q.max&&!on&&!(q.exclusive||[]).includes(b.dataset.option)})}
 function changed(){persist();$('#next').disabled=!valid(current());scheduleCheckpoint()}
 function next(){const q=current();if(!valid(q))return;accountTime();if(q.afterCard&&!state.cardSeen){showInfoCard();checkpoint();return}advance()}
-function advance(){if(state.index===CONFIG.questions.length-1){state.complete=true;state.ended=new Date().toISOString();checkpoint();thanks();return}state.index++;while(current()&&!eligible(current(),state.answers.Q04,state.answers)){const s=current();if(s.type==='multi'&&(s.onlyHR||s.audience)&&!(s.skipStudent&&state.answers.Q04==='5'))state.answers[s.id]=[s.autoValue||'8'];else if(s.autoIf&&condMet(s.autoIf,state.answers)){state.answers[s.id]=s.autoIf.value;state.autoFilled=[...new Set([...(state.autoFilled||[]),s.id])]}else delete state.answers[s.id];state.index++}{const c=current();if(c&&(state.autoFilled||[]).includes(c.id)){delete state.answers[c.id];state.autoFilled=state.autoFilled.filter(x=>x!==c.id)}}{const c=current();if(c&&(c.onlyHR||c.audience)&&JSON.stringify(state.answers[c.id])===JSON.stringify([c.autoValue||'8']))delete state.answers[c.id]}{const c=current(),ch=CONFIG.chapters?.[c?.block];if(ch&&!(state.chaptersSeen||[]).includes(c.block)){checkpoint();showChapter(c.block);return}}enteredAt=performance.now();render();checkpoint()}
+function advance(){if(state.index===CONFIG.questions.length-1){state.complete=true;state.ended=new Date().toISOString();checkpoint();thanks();return}state.index++;while(current()&&!eligible(current(),state.answers.Q04,state.answers)){const s=current();if(s.type==='multi'&&s.autoValue&&(s.onlyHR||s.audience)&&!(s.skipStudent&&state.answers.Q04==='5'))state.answers[s.id]=[s.autoValue];else if(s.autoIf&&condMet(s.autoIf,state.answers)){state.answers[s.id]=s.autoIf.value;state.autoFilled=[...new Set([...(state.autoFilled||[]),s.id])]}else delete state.answers[s.id];state.index++}{const c=current();if(c&&(state.autoFilled||[]).includes(c.id)){delete state.answers[c.id];state.autoFilled=state.autoFilled.filter(x=>x!==c.id)}}{const c=current();if(c&&c.autoValue&&(c.onlyHR||c.audience)&&JSON.stringify(state.answers[c.id])===JSON.stringify([c.autoValue]))delete state.answers[c.id]}{const c=current(),ch=CONFIG.chapters?.[c?.block];if(ch&&!(state.chaptersSeen||[]).includes(c.block)){checkpoint();showChapter(c.block);return}}enteredAt=performance.now();render();checkpoint()}
 function showChapter(block){const ch=CONFIG.chapters[block];shell(`<main class="question-only chapter-screen"><section class="panel fade"><span class="chapter-label">${esc(ch.label)}</span><h1 id="question-heading" tabindex="-1">${esc(ch.title)}</h1><p class="chapter-text">${esc(ch.text)}</p><div class="actions"><button id="chapter-next" class="primary">Verder →</button></div></section></main>`,state.index/CONFIG.questions.length*100);$('#question-heading')?.focus({preventScroll:true});$('#chapter-next').onclick=()=>{state.chaptersSeen=[...(state.chaptersSeen||[]),block];enteredAt=performance.now();render();checkpoint()}}
 function attentionText(q){const a=state.answers;if(a[q.id+'_X']===undefined)return '';const pg=a[q.id+'_PAGINA']||q.page,sec=variant(pg).sections.find(s=>s.id===sectionAt(pg,a[q.id+'_Y']));return 'Gekozen: '+(sec?sec.label.toLowerCase():'een plek')+'. Klik ergens anders om te verplaatsen, of ga verder.'}
 /* Rechte lijn: alle rijen van een schaalblok hetzelfde antwoord. Markeren, niet verwijderen. */
